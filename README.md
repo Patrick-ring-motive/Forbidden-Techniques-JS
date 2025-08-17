@@ -54,3 +54,26 @@ What's happening is we are assigning a property `await` to the global object tha
 ```
 
 In the first script `test` is set to `5 & gt` which is `5 & 5` resulting in `5`. In the second script `&gt;` is converted to `>` so `test` is set to `5 > +7` which is `false`. Then `+test` is coerced into `0`.
+
+## 3. Basics monkey-patch on fetch
+Monkey patching is modifying in-built JS functions with custom behavior. you have to be very careful how you go about this to not break other people's code. `fetch` is the most common function that I generally monkey patch. This example is to one I use to catch sny errors and convert them to http response errors. this helps keep error handling consistent amd notvhaving to duplicate code.
+
+```js
+// start with an IIFE tobcontain everything in closures.
+  (() => {
+    // _fetch stores the original fetch function as a closure variable
+    const _fetch = self.fetch;
+    // set the prototype of the new function to the old function so we inherit any other custom modifications done by others.
+    self.fetch = Object.setPrototypeOf(async function fetch(...args) {
+      const url = JSON.stringify(args.map(x => (String(x?.url ?? x))));
+      for (const block of blocks) {
+        if (url.includes(block)) {
+          console.warn('blocking fetch', ...args);
+          return new Promise(() => { });
+        }
+      }
+      return _fetch.apply(this, args);
+    }, _fetch);
+  })();
+```
+
