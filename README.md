@@ -30,3 +30,27 @@ console.log(2);
 ```
 
 What's happening is we are assigning a property `await` to the global object that just takes a parameter and returns it. So now when you call `await(x);` in synchronous code, you get the new behavior but when you call `await(x);` in async code you get the original behavior. Regular script tags run synchronously at the top level so there is no waiting. In modules, the top level runs asynchronously so the result is awaited as you might expect.
+
+
+## 2. Character data interpreted in XHTML
+
+`script` tags are interpreted as [CDATA](https://en.m.wikipedia.org/wiki/CDATA) in typical html but in xhtml characters are interpreted using the standard syntax so for example, `<` and `&` are represented by `&lt;` and `&amp;`. You may think this is irrelevant in modern web because nobody uses xhtml but they do. Any time a `script` tag is nested inside an `svg` tag, it is interpreted as xhtml. See this [example](https://codepen.io/Patrick-Ring/pen/VYvrjJa):
+
+```html
+
+<script type="module">
+    const gt = 5;
+    const test = 5 &gt; + 7;
+    console.log(+test); // > 5
+</script>
+<svg>
+  <script type="module">
+    const gt = 5;
+    const test = 5 &gt; + 7;
+    console.log(+test); // > 0
+  </script>
+</svg>
+
+```
+
+In the first script `test` is set to `5 & gt` which is `5 & 5` resulting in `5`. In the second script `&gt;` is converted to `>` so `test` is set to `5 > +7` which is `false`. Then `+test` is coerced into `0`.
