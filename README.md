@@ -181,3 +181,45 @@ nodes.push(document.querySelector('wtf'));
 console.log(nodes); // > [<div/>,<div/>,<div/>,<wtf/>]
 </script>
 ```
+
+## 6. Modifying frozen objects
+We can modify frozen objects by appending properties on the prototype that are returned based on a map keyed by the original object.
+
+```html
+<script>
+  const froze = Object.freeze({});
+  const unfreeze = (() => {
+        const $Map = self.WeakMap ?? Map;
+        const keyMap = new $Map();
+        return (obj, key, val) => {
+          const objMap = keyMap.get(obj) ?? Object.create(null);
+          objMap[key] = val;
+          keyMap.set(obj,objMap);
+          const proto = obj.__proto__;
+          Object.defineProperty(proto, key, {
+            get() {
+              const objMap = keyMap.get(this) ?? Object.create(null);
+        
+              keyMap.set(this,objMap);
+              return objMap[key];
+            },
+            set(x) {
+              const objMap = keyMap.get(this) ?? Object.create(null);
+              keyMap.set(this,objMap);
+              return objMap[key] = x;
+            },
+            enumerable: true,
+            configurable: true
+          });
+        };
+      })(); 
+      unfreeze(froze, 'test', 7);        
+      console.log(froze.test); // > 7
+      froze.test = 8; 
+      console.log(froze.test); // > 8
+      let x = {};
+      x.test = 'gg';
+      console.log(x.test); // > 'gg'
+      console.log(froze.test); // > 8  
+</script>
+```
