@@ -78,3 +78,42 @@ Monkey patching is modifying in-built JS functions with custom behavior. you hav
 })();
 ```
 
+## 4. Advanced Monkey Patch XHR
+
+Second to fetch is the older api for network calls XMLHttpRequest. Its a bit more oddly shaped. This patch blocks requests containing certain strings in the url.
+
+
+```js
+  (() => {
+    const blocks = ["example.com", "example.net"];
+    const $Map = self?.WeakMap ?? Map;
+    const _openArgs = new $Map();
+    const xhrs = [XMLHttpRequest, XMLHttpRequestUpload, XMLHttpRequestEventTarget];
+    for (const xhr of xhrs) {
+      (() => {
+        const _open = xhr.prototype.open;
+        if (!_open) return;
+        xhr.prototype.open = Object.setPrototypeOf(function open(...args) {
+          _openArgs.set(this, args);
+          return _open.apply(this, args);
+        }, _open);
+      })();
+      (() => {
+        const _send = xhr.prototype.send;
+        if (!_send) return;
+        xhr.prototype.send = Object.setPrototypeOf(function send(...args) {
+          const openArgs = JSON.stringify(_openArgs.get(this) ?? []);
+          _openArgs.delete(this);
+          for (const block of blocks) {
+            if (openArgs.includes(block)) {
+              console.warn('blocking xhr', ...args);
+              return;
+            }
+          }
+          return _send.apply(this, args);
+        }, _send);
+      })();
+    }
+  })();
+```
+
