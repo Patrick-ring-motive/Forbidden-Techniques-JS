@@ -143,3 +143,41 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
   })();
 ```
 
+## 5. Modifying read-only NodeList
+In this example we modify a NodeList which has a fixed set of nodes. we can change it by taking a new object with new properties and inserting it into the prototype chain between the NodeList and the Nodelist prototype.
+```html
+<div></div><div></div><div></div>
+<wtf></wtf>
+<script>
+const arr = document.querySelectorAll('div');
+arr[3] = document.querySelector('wtf');
+console.log(arr[3]); // > undefined
+const insert = {"3":document.querySelector('wtf')};
+Object.defineProperty(arr,'length',{
+  value: arr.length+1
+});
+[insert.__proto__,arr.__proto__] = [arr.__proto__,insert];
+console.log(arr); // > [<div/>,<div/>,<div/>,<wtf/>]
+</script>
+```
+We can extrapolate this out into a push method.
+```html
+<script>
+(()=>{
+NodeList.prototype.push = function push(x){
+const insert = {};
+insert[this.length] = x;
+Object.defineProperty(this,'length',{
+  value: this.length+1,
+  configurable:true,
+  writable:true
+});
+[insert.__proto__,this.__proto__] = [this.__proto__,insert];
+};
+})();
+  
+const nodes = document.querySelectorAll('div');
+nodes.push(document.querySelector('wtf'));
+console.log(nodes); // > [<div/>,<div/>,<div/>,<wtf/>]
+</script>
+```
