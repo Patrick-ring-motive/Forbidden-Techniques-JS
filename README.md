@@ -59,7 +59,7 @@ In the first script `test` is set to `5 & gt` which is `5 & 5` resulting in `5`.
 Monkey patching is modifying in-built JS functions with custom behavior. you have to be very careful how you go about this to not break other people's code. `fetch` is the most common function that I generally monkey patch. This example is to one I use to catch sny errors and convert them to http response errors. this helps keep error handling consistent amd notvhaving to duplicate code.
 
 ```js
-// start with an IIFE tobcontain everything in closures.
+// start with an IIFE to contain everything in closures.
 (() => {
     // _fetch stores the original fetch function as a closure variable
     const _fetch = self.fetch;
