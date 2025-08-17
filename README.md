@@ -60,20 +60,21 @@ Monkey patching is modifying in-built JS functions with custom behavior. you hav
 
 ```js
 // start with an IIFE tobcontain everything in closures.
-  (() => {
+(() => {
     // _fetch stores the original fetch function as a closure variable
     const _fetch = self.fetch;
     // set the prototype of the new function to the old function so we inherit any other custom modifications done by others.
     self.fetch = Object.setPrototypeOf(async function fetch(...args) {
-      const url = JSON.stringify(args.map(x => (String(x?.url ?? x))));
-      for (const block of blocks) {
-        if (url.includes(block)) {
-          console.warn('blocking fetch', ...args);
-          return new Promise(() => { });
-        }
-      }
-      return _fetch.apply(this, args);
-    }, _fetch);
-  })();
+    try{
+      // be sure to await or errors won't get caught
+      return await _fetch.apply(this, args);
+    }catch(e){
+      return new Response(e.stack,{
+        status:469,
+        statusText:e.message
+      });
+    }
+  }, _fetch);
+})();
 ```
 
