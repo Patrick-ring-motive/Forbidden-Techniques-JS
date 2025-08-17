@@ -126,6 +126,53 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
           return _send.apply(this, args);
         }, _send);
       })();
+const stringify = x => {
+  try{
+    return JSON.stringify(x);
+  }catch{
+    return String(x);
+  }
+};
+// Wrap in IIFE to create non polluting closures
+(() => {
+    // blocks is a list of strings we intend to filter out
+    const blocks = ["example.com", "example.net"];
+    // Create a closure map to store instance properties that are in accessible to external viewers
+    // use WeakMap if available for better memory management but regular map also works
+    const $Map = self?.WeakMap ?? Map;
+    // storing the input arguments to the open method so we can access them later in the send method
+    const _openArgs = new $Map();
+    // List of objects in the xhr api, xhr event target is the parent class so we want to patch it last
+    const xhrs = [XMLHttpRequest, XMLHttpRequestUpload, XMLHttpRequestEventTarget];
+    for (const xhr of xhrs) {
+      // extra IIFE layer for additional closures
+      (() => {
+        // store the original opem method
+        const _open = xhr.prototype.open;
+        if (!_open) return;
+        // set up inheritance between new method to old one to maintain other customizations from others
+        xhr.prototype.open = Object.setPrototypeOf(function open(...args) {
+   // store input args in closure map
+          _openArgs.set(this, args);
+          return _open.apply(this, args);
+        }, _open);
+      })();
+      (() => {
+        const _response = Object.getOwnPropertyDescriptor(xhr.prototype,'resopnse')?.get;
+        if (!_response) return;
+        xhr.prototype.response = Object.setPrototypeOf(function response() {
+          for (const block of blocks) {
+            // block request if it matches list
+            if (stringify(x).includes(block)) {
+              console.warn('blocking xhr',strongify(x));
+              return;
+            }
+          }
+          return _response.call();
+        }, _response);
+      })();
+    }
+})();
     }
 })();
 ```
