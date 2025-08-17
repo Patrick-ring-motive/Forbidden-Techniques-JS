@@ -103,7 +103,7 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
         if (!_open) return;
         // set up inheritance between new method to old one to maintain other customizations from others
         xhr.prototype.open = Object.setPrototypeOf(function open(...args) {
-   // store input args in closure map
+        // store input args in closure map
           _openArgs.set(this, args);
           return _open.apply(this, args);
         }, _open);
@@ -112,9 +112,9 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
         const _send = xhr.prototype.send;
         if (!_send) return;
         xhr.prototype.send = Object.setPrototypeOf(function send(...args) {
-          //retrieve attributes from closure map
+          // retrieve attributes from closure map
           const openArgs = JSON.stringify(_openArgs.get(this) ?? []);
-     // clean map
+          // clean map
           _openArgs.delete(this);
           for (const block of blocks) {
             // block request if it matches list
