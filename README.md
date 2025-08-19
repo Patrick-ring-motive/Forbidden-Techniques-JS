@@ -335,3 +335,72 @@ console.log(assignAll(obj,new Response("cheese"))); // > [object Response]
 </script>
 ```
 
+## 8. Frozen Objects - Modify Anything
+
+The best way to modify frozen objects is to never let them freeze in the first place. You can do this by mobkey patching all the ways that things get frozen.
+
+```js
+
+(()=>{
+  const _freeze = Object.freeze;
+  Object.freeze = Object.setPrototypeOf(function freeze(obj){
+    return obj;
+  },_freeze);
+})();
+
+(()=>{
+  const _seal = Object.seal;
+  Object.seal = Object.setPrototypeOf(function seal(obj){
+    return obj;
+  },_seal);
+})();
+
+(()=>{
+  const _preventExtensions = Object.preventExtensions;
+  Object.preventExtensions = Object.setPrototypeOf(function preventExtensions(obj){
+    return obj;
+  },_preventExtensions);
+})();
+
+(()=>{
+  const _preventExtensions = Reflect.preventExtensions;
+    Reflect.preventExtensions = Object.setPrototypeOf(function preventExtensions(obj){
+    return true;
+  },_preventExtensions);
+})();
+
+(()=>{
+  const _defineProperty = Object.defineProperty;
+  Object.defineProperty = Object.setPrototypeOf(function defineProperty(obj,prop,desc){
+    return _defineProperty(obj,prop,{
+      ...desc,
+      configurable:true
+    })
+  },_defineProperty);
+})();
+
+(()=>{
+  const _defineProperties = Object.defineProperties;
+  Object.defineProperties = Object.setPrototypeOf(function defineProperties(obj,desc){
+    for(const key in desc){
+      desc[key].configurable = true;
+    }
+    for(const key of Reflect.ownKeys(desc)){
+      desc[key].configurable = true;
+    }
+    return _defineProperties(obj,desc)
+  },_defineProperties);
+})();
+
+(()=>{
+  const _defineProperty = Reflect.defineProperty;
+  Reflect.defineProperty = Object.setPrototypeOf(function defineProperty(obj,prop,desc){
+    return _defineProperty(obj,prop,{
+      ...desc,
+      configurable:true
+    })
+  },_defineProperty);
+})();
+
+```
+
