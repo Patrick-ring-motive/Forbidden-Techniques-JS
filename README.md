@@ -176,7 +176,8 @@ console.log(arr[3]); // > undefined
 const insert = {"3":document.querySelector('wtf')};
 Object.defineProperty(arr,'length',{
   value: arr.length+1,
-  configurable:true
+  configurable:true,
+  writable:true
 });
 [insert.__proto__,arr.__proto__] = [arr.__proto__,insert];
 console.log(arr); // > [<div/>,<div/>,<div/>,<wtf/>]
@@ -214,7 +215,7 @@ We can modify frozen objects by appending properties on the prototype that are r
   const unfreeze = (() => {
         const hasProp = (obj,prop)=>{
           try{
-            return !!Object.getOwnPropertyDescriptor(prop);
+            return !!Object.getOwnPropertyDescriptor(obj,prop);
           }catch{}
         };
         // create a map to store additional object properties
