@@ -175,7 +175,8 @@ arr[3] = document.querySelector('wtf');
 console.log(arr[3]); // > undefined
 const insert = {"3":document.querySelector('wtf')};
 Object.defineProperty(arr,'length',{
-  value: arr.length+1
+  value: arr.length+1,
+  configurable:true
 });
 [insert.__proto__,arr.__proto__] = [arr.__proto__,insert];
 console.log(arr); // > [<div/>,<div/>,<div/>,<wtf/>]
