@@ -107,7 +107,7 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
      try{
       // extra IIFE layer for additional closures
       (() => {
-        // store the original opem method
+        // store the original open method
         const _open = xhr.prototype.open;
         if (!_open) return;
         // set up inheritance between new method to old one to maintain other customizations from others
@@ -117,7 +117,26 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
           return _open.apply(this, args);
         }, _open);
       })();
-      // patching a property is similar to patching a metgod but only for the property getter
+
+      (() => {
+        // store the original send method
+        const _send = xhr.prototype.send;
+        if (!_send) return;
+        // set up inheritance between new method to old one to maintain other customizations from others
+        xhr.prototype.send = Object.setPrototypeOf(function send(...args) {
+          // store input args in closure map
+          const openArgs = _openArgs.get(this) ?? [];
+          for(const arg of openArgs){
+            const sarg = stringify(arg);
+            for(const block of blocks){
+              if(sarg.includes(block))return;
+            }
+          }
+          return _send.apply(this, args);
+        }, _open);
+      })();
+
+      // patching a property is similar to patching a method but only for the property getter
       // this example block the response if it contains one of our string representations
       for (const res of ['response', 'responseText', 'responseURL', 'responseXML']) {
         (() => {
