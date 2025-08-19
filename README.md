@@ -55,7 +55,7 @@ What's happening is we are assigning a property `await` to the global object tha
 
 In the first script `test` is set to `5 & gt` which is `5 & 5` resulting in `5`. In the second script `&gt;` is converted to `>` so `test` is set to `5 > +7` which is `false`. Then `+test` is coerced into `0`.
 
-## 3. Basics monkey-patch on fetch
+## 3. Basic monkey-patch on fetch
 Monkey patching is modifying in-built JS functions with custom behavior. you have to be very careful how you go about this to not break other people's code. `fetch` is the most common function that I generally monkey patch. This example is to one I use to catch sny errors and convert them to http response errors. this helps keep error handling consistent amd notvhaving to duplicate code.
 
 ```js
@@ -144,7 +144,7 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
 ```
 
 ## 5. Modifying read-only NodeList
-In this example we modify a NodeList which has a fixed set of nodes. we can change it by taking a new object with new properties and inserting it into the prototype chain between the NodeList and the Nodelist prototype.
+In this example we modify a NodeList which has a fixed set of nodes. We can change it by taking a new object with new properties and inserting it into the prototype chain between the NodeList and the Nodelist prototype.
 ```html
 <div></div><div></div><div></div>
 <wtf></wtf>
@@ -182,24 +182,33 @@ console.log(nodes); // > [<div/>,<div/>,<div/>,<wtf/>]
 </script>
 ```
 
-## 6. Modifying frozen objects
+## 6. Frozen Objects - Adding Properties
 We can modify frozen objects by appending properties on the prototype that are returned based on a map keyed by the original object.
 
 ```html
 <script>
+  // get our frozen object
   const froze = Object.freeze({});
   const unfreeze = (() => {
+        const hasProp = (obj,prop)=>{
+          try{
+            return !!Object.getOwnPropertyDescriptor(prop);
+          }catch{}
+        };
+        // create a map to store additional object properties
         const $Map = self.WeakMap ?? Map;
         const keyMap = new $Map();
         return (obj, key, val) => {
+          const proto = obj.__proto__;
+          // if the object already has this property then this trick wont work
+          // if the prototype already has this property then this trick would corrupt the prototype
+          if(hasProp(obj,key)||hasProp(proto,key))return;
           const objMap = keyMap.get(obj) ?? Object.create(null);
           objMap[key] = val;
           keyMap.set(obj,objMap);
-          const proto = obj.__proto__;
           Object.defineProperty(proto, key, {
             get() {
               const objMap = keyMap.get(this) ?? Object.create(null);
-        
               keyMap.set(this,objMap);
               return objMap[key];
             },
