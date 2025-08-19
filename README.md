@@ -332,7 +332,6 @@ console.log(assignAll(obj,new Response("cheese"))); // > [object Response]
 
 (async()=>console.log(await obj.text()))(); // > "cheese"
 
-
 </script>
 ```
 
