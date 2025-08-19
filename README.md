@@ -104,6 +104,7 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
     const _openArgs = new $Map();
     // List of objects in the xhr api, xhr event target is the parent class so we want to patch it last
     for (const xhr of [XMLHttpRequest, XMLHttpRequestUpload, XMLHttpRequestEventTarget]) {
+     try{
       // extra IIFE layer for additional closures
       (() => {
         // store the original opem method
@@ -139,6 +140,7 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
           });
         })()
       }
+     }catch{}
     }
   })();
 ```
