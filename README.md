@@ -232,3 +232,107 @@ We can modify frozen objects by appending properties on the prototype that are r
       console.log(froze.test); // > 8  
 </script>
 ```
+
+## 7. Frozen Objects - Modifying Existing Properties
+We can modify non-primitive properties of frozen objects by essentially redirecting everything on property object to a new value. This can also be used to redefine a `const` in place. Keep in mind that this in place modification effects every reference to this propert object. 
+```html
+<script>
+//shorthand for defining properties on objects
+const objDoProp = function(obj, prop, def, enm, mut) {
+  return Object.defineProperty(obj, prop, {
+    value: def,
+    writable: mut,
+    enumerable: enm,
+    configurable: mut,
+  });
+};
+const objDefProp = (obj, prop, def) => objDoProp(obj, prop, def, false, true);
+const objDefEnum = (obj, prop, def) => objDoProp(obj, prop, def, true, true);
+
+// fallback to writeable if configurable is false
+const objWriteProp = (obj,prop,def)=>{
+  try{
+    const old = Object.getOwnPropertyDescriptor(obj,prop);
+    if(old?.writable && !old?.configurable){
+      obj[prop] = def;
+    }else{
+      objDefProp(obj,prop,def);
+    }
+  }catch{}
+};
+
+const objWriteEnum = (obj,prop,def)=>{
+  try{
+    const old = Object.getOwnPropertyDescriptor(obj,prop);
+    if(old?.writable && !old?.configurable){
+      obj[prop] = def;
+    }else{
+      objDefEnum(obj,prop,def);
+    }
+  }catch{}
+};
+
+const getKeys = x =>{
+  try{
+    return Reflect.ownKeys(x);
+  }catch{
+    return [];
+  }
+};
+
+//assign all properties from src to target
+//bind functions to src when assigning to target
+function assignAll(target, src) {
+  const excepts = ["prototype", "constructor", "__proto__"];
+  const enums = [];
+  let source = src;
+  while (source) {
+    for (const key in source) {
+      try {
+        if (excepts.includes(key)) {
+          continue;
+        }
+        objWriteEnum(target, key, source[key]?.bind?.(src) ?? source[key]);
+        enums.push(key);
+      } catch {}
+    }
+    for (const key of getKeys(source)) {
+      try {
+        if (enums.includes(key) || excepts.includes(key)) {
+          continue;
+        }
+        objWriteProp(target, key, source[key]?.bind?.(src) ?? source[key]);
+        
+      } catch {}
+    }
+    // walk up the prototype chain for more properties
+    source = Object.getPrototypeOf(source);
+  }
+  // make sure identifying properties point to src
+  for(const identity of ["valueOf","toString","toLocaleString",Symbol.toPrimitive]){
+    try{
+      objWriteProp(target,identity,()=>src);
+    }catch{}
+  }
+  try{
+    Object.defineProperty(target,Symbol.toStringTag,{
+      configurable:true,
+      enumerable:true,
+      get:()=>src
+    });
+  }catch{}
+  // finally assign the prototype of src to target
+  try{target.__proto__ = src.__proto__;}catch{}
+  return target;
+}
+
+const obj = {};
+
+console.log(assignAll(obj,new Response("cheese"))); // > [object Response]
+
+(async()=>console.log(await obj.text()))(); // > "cheese"
+
+
+</script>
+```
+
