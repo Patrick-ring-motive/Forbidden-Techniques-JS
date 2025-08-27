@@ -196,6 +196,7 @@ Object.defineProperty(this,'length',{
   writable:true
 });
 [insert.__proto__,this.__proto__] = [this.__proto__,insert];
+return this.length;
 };
 })();
   
