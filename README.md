@@ -316,7 +316,7 @@ function assignAll(target, src) {
         if (excepts.includes(key)) {
           continue;
         }
-        objWriteEnum(target, key, source[key]?.bind?.(src) ?? source[key]);
+        objWriteEnum(target, key, source[key]?.bind?.(src?.valueOf?.() ?? src) ?? source[key]);
         enums.push(key);
       } catch {}
     }
@@ -325,7 +325,7 @@ function assignAll(target, src) {
         if (enums.includes(key) || excepts.includes(key)) {
           continue;
         }
-        objWriteProp(target, key, source[key]?.bind?.(src) ?? source[key]);
+        objWriteProp(target, key, source[key]?.bind?.(src?.valueOf?.() ?? src) ?? source[key]);
         
       } catch {}
     }
