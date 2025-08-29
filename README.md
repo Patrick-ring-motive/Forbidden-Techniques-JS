@@ -188,6 +188,17 @@ We can extrapolate this out into a push method.
 <script>
 (()=>{
 NodeList.prototype.push = function push(x){
+// try the proper way first
+if(x instanceof(Node)){
+if(this[0]?.parentNode?.childNodes === this){
+  this[0].parentNode.appendChild(x);
+  return this.length;
+}
+if(this[0]?.parentElement?.childNodes === this){
+  this[0].parentElement.appendChild(x);
+  return this.length;
+}
+}
 const insert = {};
 insert[this.length] = x;
 Object.defineProperty(this,'length',{
