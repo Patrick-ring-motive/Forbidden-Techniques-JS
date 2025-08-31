@@ -503,8 +503,6 @@ We can package this up in a simple wrapper class
 ```
 TODO:
 
-promise short curcuit 1
-
 promise short curcuit 2 (util.inspect)
 
 sync blob 2
