@@ -441,6 +441,28 @@ The best way to modify frozen objects is to never let them freeze in the first p
 
 ```
 
+## 9. Sync Blob Parse
+
+```js
+  // synchronously turn a blob into text
+  function blobText(blob){
+    // create blob url
+    const url = URL.createObjectURL(helloWorlBlob);
+    // create an ajax request targeted ar rge blob url
+    // set async to false
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET',url,false);
+    // execute the "network" request
+    xhr.send();
+    //return the response as text
+    return xhr.responseText;
+  };
+  // test 
+  const helloWorlBlob = new Blob(['Hello World']);
+  const helloWorldText = blobText(helloWorlBlob);
+  console.log(helloWorldText);
+```
+
 TODO:
 
 promise short curcuit 1
