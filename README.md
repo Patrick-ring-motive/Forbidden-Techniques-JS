@@ -1,7 +1,17 @@
 # Forbidden-Techniques-JS
 Forbidden Techniques is a collection of my techniques developed frok mybexploration of the "forbidden" techniques in JS. Includes some weird JS quirks inspired by wtfjs. Largely this is how to effectively apply monkey patches and modify prototype chains.
 
-TODO: toc
+## Table of Contents
+- [1. `await` keyword overloading](#1-await-keyword-overloading)
+- [2. Character data interpreted in XHTML](#2-character-data-interpreted-in-xhtml)
+- [3. Basic monkey-patch on fetch](#3-basic-monkey-patch-on-fetch)
+- [4. Advanced Monkey Patch XHR](#4-advanced-monkey-patch-xhr)
+- [5. Modifying read-only NodeList](#5-modifying-read-only-nodelist)
+- [6. Frozen Objects - Adding Properties](#6-frozen-objects---adding-properties)
+- [7. Frozen Objects - Modifying Existing Properties](#7-frozen-objects---modifying-existing-properties)
+- [8. Frozen Objects - Modify Anything](#8-frozen-objects---modify-anything)
+- [9. Sync Blob Parse](#9-sync-blob-parse)
+- [10. Short Circuit Promises](#10-short-circuit-promises)
 
 ## 1. `await` keyword overloading
 
