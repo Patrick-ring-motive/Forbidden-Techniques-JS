@@ -467,8 +467,40 @@ On a `Blob`, calling `text()` [returns a promise(https://developer.mozilla.org/e
 
 ## 10. Short Circuit Promises
 
-When you have a promise, you must call `await` in an async context in order to get the resolved value. When you call `await`, everything on the call stack and the micotadk queue will execute before the async function continues even if the promise is already settled. The simplest way to shortcircuit this is to use a value assignment within async code. then you can check if the promise is resolved before using `await`.
+When you have a promise, you must call `await` in an async context in order to get the resolved value. When you call `await`, everything on the call stack and the micotadk queue will execute before the async function continues even if the promise is already settled. The simplest way to shortcircuit this is to use a value assignment within async code. Then you can check if the promise is resolved before using `await`.
 
+```html
+<script type="module">
+  let value = new Promise(resolve=>resolve("hello"));
+  (async()=>value = await value)();
+  console.log(value?.constructor?.name,value);
+  if(value instanceof Promise)await "anything"
+  console.log(value?.constructor?.name,value);
+</script>
+```
+
+We can package this up in a simple wrapper class
+```html
+<script type="module">
+  class PromiseWrapper{
+    constructor(promise){
+      this.promise = promise;
+      (async()=>{
+       try{
+         this.value = await promise;
+       }catch(e){
+         this.error = e;
+       }
+      })();
+    }
+  }
+  const value = new Promise(resolve=>resolve("hello"));
+  const wrap = new PromiseWrapper(value);
+  console.log(wrap);
+  await value;
+  console.log(wrap);
+</script>
+```
 TODO:
 
 promise short curcuit 1
