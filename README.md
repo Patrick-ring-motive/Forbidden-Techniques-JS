@@ -442,12 +442,17 @@ The best way to modify frozen objects is to never let them freeze in the first p
 ```
 
 TODO:
+
 promise short curcuit 1
+
 promise short curcuit 2 (util.inspect)
+
 sync blob
+
 idempotent http
 
 google colab js
+
 sync import
 
 
