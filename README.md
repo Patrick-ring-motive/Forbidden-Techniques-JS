@@ -1,6 +1,8 @@
 # Forbidden-Techniques-JS
 Forbidden Techniques is a collection of my techniques developed frok mybexploration of the "forbidden" techniques in JS. Includes some weird JS quirks inspired by wtfjs. Largely this is how to effectively apply monkey patches and modify prototype chains.
 
+TODO: toc
+
 ## 1. `await` keyword overloading
 
 `await` is a keyword in js that works in async code blocks to wait for a promise to resolve. While it is a keyword, it is not reserved. This means it can be overloaded at the global level. When you do this, you can get some interesting behavior. Consider this [example](https://codepen.io/Patrick-Ring/pen/azvVNKq).
@@ -133,7 +135,7 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
             }
           }
           return _send.apply(this, args);
-        }, _open);
+        }, _send);
       })();
 
       // patching a property is similar to patching a method but only for the property getter
@@ -438,4 +440,11 @@ The best way to modify frozen objects is to never let them freeze in the first p
 })();
 
 ```
+
+TODO:
+promise short curcuit 1
+promise short curcuit 2
+sync blob
+idempotent http
+
 
