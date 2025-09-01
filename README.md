@@ -453,7 +453,7 @@ The best way to modify frozen objects is to never let them freeze in the first p
 
 ## 9. Sync Blob Parse
 
-On a `Blob`, calling `text()` [returns a promise(https://developer.mozilla.org/en-US/docs/Web/API/Blob/text). However there are some tricks you can do to sunchronously unravel a blob. One is to exploit synchronous XMLHttpRequest.
+On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/en-US/docs/Web/API/Blob/text). However there are some tricks you can do to sunchronously unravel a blob. One is to exploit synchronous XMLHttpRequest.
 
 ```js
   // synchronously turn a blob into text
