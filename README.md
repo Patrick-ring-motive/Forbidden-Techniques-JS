@@ -535,7 +535,7 @@ END
 
 ## 12. Short Circuit Promises with `util.inspect()`
 
-Using the above colab trick I can share the NodeJS that makes use of `util.inspect()` to synchronously unwrap a promise.
+Using the above colab trick I can share the NodeJS that makes use of [`util.inspect()` to synchronously unwrap a promise](https://colab.research.google.com/drive/1a1dQVNql-EQlBgNifh5A3vt3zL5fGWOj?usp=sharing).
 
 ```js
 %%bash
