@@ -1,5 +1,5 @@
 # Forbidden-Techniques-JS
-Forbidden Techniques is a collection of my techniques developed from my exploration of the "forbidden" techniques in JS. Includes some weird JS quirks inspired by wtfjs. Largely this is how to effectively apply monkey patches and modify prototype chains. It seems that this type of exploration often goes missed in the modern learning paths.
+Forbidden Techniques is a collection of my techniques developed from my exploration of the "forbidden" techniques in JS. Includes some weird JS quirks inspired by wtfjs. Largely this is how to effectively apply monkey patches and modify prototype chains. It seems that this type of exploration often goes missed in the modern learning paths. These are things you should probably never do in a production application because they can corrupt your runtime, cause various memory leaks, or trigger infinite recursion if not handled correctly.
 
 ## Table of Contents
 - [1. `await` keyword overloading](#1-await-keyword-overloading)
