@@ -480,7 +480,7 @@ On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/
 
 ## 10. Short Circuit Promises
 
-When you have a promise, you must call `await` in an async context in order to get the resolved value. When you call `await`, everything on the call stack and the micotadk queue will execute before the async function continues even if the promise is already settled. The simplest way to shortcircuit this is to use a value assignment within async code. Then you can check if the promise is resolved before using `await`.
+When you have a promise, you must call `await` in an async context in order to get the resolved value. When you call `await`, everything on the call stack and the micotask queue will execute before the async function continues even if the promise is already settled. The simplest way to shortcircuit this is to use a value assignment within async code. Then you can check if the promise is resolved before using `await`.
 
 ```html
 <script type="module">
@@ -518,11 +518,7 @@ TODO:
 
 promise short curcuit 2 (util.inspect)
 
-sync blob 2
-
 idempotent http
-
-google colab js
 
 sync import
 
