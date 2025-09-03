@@ -453,7 +453,7 @@ The best way to modify frozen objects is to never let them freeze in the first p
 
 ## 9. Sync Blob Parse
 
-On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/en-US/docs/Web/API/Blob/text). However there are some tricks you can do to synchronously unravel a blob. One way that only works in web workers is to use `FileReaderSync`. Another way that works on the main thread is to exploit synchronous XMLHttpRequest.
+On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/en-US/docs/Web/API/Blob/text). However there are some tricks you can do to synchronously unravel a blob. One way that only works in web workers is to use [`FileReaderSync`](https://developer.mozilla.org/en-US/docs/Web/API/FileReaderSync). Another way that works on the main thread is to exploit synchronous [`XMLHttpRequest`](https://developer.mozilla.org/en-US/docs/Web/API/XMLHttpRequest_API/Synchronous_and_Asynchronous_Requests#synchronous_request).
 
 ```js
   // synchronously turn a blob into text
