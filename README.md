@@ -555,6 +555,10 @@ END
 
 Notice how `"hello world"` is never awaited or assigned directly. `util.inspect()` uses Node internals to peek into the promise.
 
+13. Idempotent `fetch`
+
+You'll see `Request` and `Response` objects have consumable contents. So calling `response.text()` will give you the content as text the first time but will throw an error if called again. This optimization exists to prevent browser memory from filling up. While this makes sense, it is not how most objects in JS work. If you use `response.clone().text()` instead, you can call it multiple times. Using monkey the monkey patch below, you can bake this behavior in.
+
 ```js
 (()=>{
   for(const r of [Request.prototype,Response.prototype]){
@@ -575,12 +579,9 @@ Notice how `"hello world"` is never awaited or assigned directly. `util.inspect(
     }
   }
 })();
+
+const res = new Response('asdf');
+console.log(await res.text()); //> asdf
+console.log(await res.text()); //> asdf
 ```
-
-TODO:
-
-idempotent http
-
-sync import
-
 
