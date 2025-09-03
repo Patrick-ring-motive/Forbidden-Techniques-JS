@@ -555,20 +555,28 @@ END
 
 Notice how `"hello world"` is never awaited or assigned directly. `util.inspect()` uses Node internals to peek into the promise.
 
-13. Idempotent `fetch`
+## 13. Idempotent `fetch`
 
 You'll see `Request` and `Response` objects have consumable contents. So calling `response.text()` will give you the content as text the first time but will throw an error if called again. This optimization exists to prevent browser memory from filling up. While this makes sense, it is not how most objects in JS work. If you use `response.clone().text()` instead, you can call it multiple times. Using monkey the monkey patch below, you can bake this behavior in.
 
-```js
+```html
+<script type="module">
 (()=>{
+  // Non-leaking IIFE
+  // Apply to both request and response
   for(const r of [Request.prototype,Response.prototype]){
+    // Apply to all functions that can consume the body
     for(const fn of ['arrayBuffer','blob','bytes','formData','json','text']){
+      // skip if doesn't exist
       if(typeof r[fn] !== 'function') continue;
+      // store the native function
       const _fn = r[fn];
+      // Shadow the native function with a wrapper that clones first
       r[fn] = Object.setPrototypeOf(function(){
                 return _fn.call(this.clone());
               },_fn);
     }
+    // Apply to the getter of the body itself
     const _body = Object.getOwnPropertyDescriptor(r,'body').get;
     if(_body){
       Object.defineProperty(r,'body',{
@@ -583,5 +591,7 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
 const res = new Response('asdf');
 console.log(await res.text()); //> asdf
 console.log(await res.text()); //> asdf
+</script>
 ```
 
+This can be particularly useful when doing your own clientside caching and preventing async race conditions.
