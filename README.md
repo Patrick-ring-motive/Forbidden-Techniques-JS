@@ -514,6 +514,11 @@ We can package this up in a simple wrapper class
   console.log(wrap);
 </script>
 ```
+
+Node in google colab
+https://colab.research.google.com/drive/1x3Aeiz08wmWaatPar6MgCBbvMutl7FRW?usp=sharing
+
+
 TODO:
 
 promise short curcuit 2 (util.inspect)
