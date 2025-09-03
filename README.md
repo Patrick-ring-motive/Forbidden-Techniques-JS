@@ -515,13 +515,47 @@ We can package this up in a simple wrapper class
 </script>
 ```
 
-Node in google colab
-https://colab.research.google.com/drive/1x3Aeiz08wmWaatPar6MgCBbvMutl7FRW?usp=sharing
+## 11. Node in Google Colab
 
+This is not really a JavaScript hack but a Google Colab trick. While primarily used for Python, Google Colab had multiple ways to run JavaScript. Google Colab instances come preinstalled with NodeJS and this makes it useful to me to share JS tricks that are specific to NodeJS. [Here's how it is invoked](https://colab.research.google.com/drive/1x3Aeiz08wmWaatPar6MgCBbvMutl7FRW?usp=sharing).
+
+```js
+%%bash
+node -e "$(cat <<-END
+
+    console.log('hello world');
+
+END
+)"
+
+```
+
+`%%bash` turns the cell into a Bash script from which we can invoke `node -e` to run serverside code. `%%javascript` can be use but this only runs code on the frontend in a sandbox.
+
+
+## 12. Short Circuit Promises with `util.inspect()`
+
+Using the above colab trick I can share the NodeJS that makes use of `util.inspect()` to synchronously unwrap a promise.
+
+```js
+%%bash
+node -e "$(cat <<-END
+
+  //import util.inspect
+  const { inspect } = require("util");
+  //create a simple promise
+  const promise = (async()=>"hello world")();
+  //inspect checks internals without needing to await anything
+  const value = inspect(promise).slice(11,-3);
+  console.log(value); //> hello world
+
+END
+)"
+```
+
+Notice how `"hello world"` is never awaited or assigned directly. `util.inspect()` uses Node internals to peek into the promise.
 
 TODO:
-
-promise short curcuit 2 (util.inspect)
 
 idempotent http
 
