@@ -287,7 +287,7 @@ We can modify frozen objects by appending properties on the prototype that are r
 ```
 
 ## 7. Frozen Objects - Modifying Existing Properties
-We can modify non-primitive properties of frozen objects by essentially redirecting everything on property object to a new value. This can also be used to redefine a `const` in place. Keep in mind that this in place modification effects every reference to this propert object. 
+We can modify non-primitive properties of frozen objects by essentially redirecting everything on property object to a new value. This can also be used to redefine a `const` in place. Keep in mind that this in place modification effects every reference to this property object. 
 ```html
 <script>
   //shorthand for defining properties on objects
@@ -386,6 +386,10 @@ We can modify non-primitive properties of frozen objects by essentially redirect
   console.log(assignAll(obj, new Response("cheese"))); // > [object Response]
 
   (async () => console.log(await obj.text()))(); // > "cheese"
+
+  const froze = Object.freeze({ prop:{} });
+  assignAll(froze.prop, "hello");
+  console.log(`${froze.prop} world`); // > hello world
 </script>
 ```
 
