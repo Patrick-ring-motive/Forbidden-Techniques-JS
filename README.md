@@ -203,7 +203,7 @@ We can extrapolate this out into a push method.
 <script>
 (()=>{
 NodeList.prototype.push = function push(x){
-  // try the proper way first
+  // try the proper way first by appending to the parent element
 if(x instanceof Node){
   if(this[0]?.parentNode?.childNodes === this){
     this[0].parentNode.appendChild(x);
@@ -214,6 +214,7 @@ if(x instanceof Node){
     return this.length;
   }
 }
+// if the elements don't share a common parent then apply this hack
 const insert = {};
 insert[this.length] = x;
 Object.defineProperty(this,'length',{
