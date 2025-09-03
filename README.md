@@ -71,7 +71,7 @@ What's happening is we are assigning a property `await` to the global object tha
 In the first script `test` is set to `5 & gt` which is `5 & 5` resulting in `5`. In the second script `&gt;` is converted to `>` so `test` is set to `5 > +7` which is `false`. Then `+test` is coerced into `0`.
 
 ## 3. Basic monkey-patch on fetch
-Monkey patching is modifying in-built JS functions with custom behavior. you have to be very careful how you go about this to not break other people's code. `fetch` is the most common function that I generally monkey patch. This example is to one I use to catch sny errors and convert them to http response errors. this helps keep error handling consistent amd notvhaving to duplicate code.
+Monkey patching is modifying in-built JS functions with custom behavior. you have to be very careful how you go about this to not break other people's code. `fetch` is the most common function that I generally monkey patch. This example is to one I use to catch any errors and convert them to http response errors. This helps keep error handling consistent amd not having to duplicate code. You want to either do this or throw on http errors.
 
 ```js
 // start with an IIFE to contain everything in closures.
