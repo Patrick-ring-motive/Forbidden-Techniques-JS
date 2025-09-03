@@ -23,23 +23,23 @@ Forbidden Techniques is a collection of my techniques developed from my explorat
 ```html
 
 <script>
-globalThis.await=_=>_;
-console.alog = async(x)=>{
-  await "wtf";
-  console.log(x);
-};
+  globalThis.await = _ => _;
+  console.alog = async (x) => {
+    await "wtf";
+    console.log(x);
+  };
 </script>
 
 <script>
-await(console.alog(1));
-console.log(2);
-// prints 2 then 1
+  await(console.alog(1));
+  console.log(2);
+  // prints 2 then 1
 </script>
 
 <script type="module">
-await(console.alog(1));
-console.log(2);
-// prints 1 then 2
+  await(console.alog(1));
+  console.log(2);
+  // prints 1 then 2
 </script>
 
 ```
@@ -54,9 +54,9 @@ What's happening is we are assigning a property `await` to the global object tha
 ```html
 
 <script type="module">
-    const gt = 5;
-    const test = 5 &gt; + 7;
-    console.log(+test); // > 5
+  const gt = 5;
+  const test = 5 &gt; + 7;
+  console.log(+test); // > 5
 </script>
 <svg>
   <script type="module">
@@ -76,17 +76,17 @@ Monkey patching is modifying in-built JS functions with custom behavior. you hav
 ```js
 // start with an IIFE to contain everything in closures.
 (() => {
-    // _fetch stores the original fetch function as a closure variable
-    const _fetch = self.fetch;
-    // set the prototype of the new function to the old function so we inherit any other custom modifications done by others.
-    self.fetch = Object.setPrototypeOf(async function fetch(...args) {
-    try{
+  // _fetch stores the original fetch function as a closure variable
+  const _fetch = self.fetch;
+  // set the prototype of the new function to the old function so we inherit any other custom modifications done by others.
+  self.fetch = Object.setPrototypeOf(async function fetch(...args) {
+    try {
       // be sure to await or errors won't get caught
       return await _fetch.apply(this, args);
-    }catch(e){
-      return new Response(e.stack,{
-        status:469,
-        statusText:e.message
+    } catch (e) {
+      return new Response(e.stack, {
+        status: 469,
+        statusText: e.message
       });
     }
   }, _fetch);
@@ -119,62 +119,62 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
     const _openArgs = new $Map();
     // List of objects in the xhr api, xhr event target is the parent class so we want to patch it last
     for (const xhr of [XMLHttpRequest, XMLHttpRequestUpload, XMLHttpRequestEventTarget]) {
-     try{
-      // extra IIFE layer for additional closures
-      (() => {
-        // store the original open method
-        const _open = xhr.prototype.open;
-        if (!_open) return;
-        // set up inheritance between new method to old one to maintain other customizations from others
-        xhr.prototype.open = Object.setPrototypeOf(function open(...args) {
-          // store input args in closure map
-          _openArgs.set(this, args);
-          return _open.apply(this, args);
-        }, _open);
-      })();
-
-      (() => {
-        // store the original send method
-        const _send = xhr.prototype.send;
-        if (!_send) return;
-        // set up inheritance between new method to old one to maintain other customizations from others
-        xhr.prototype.send = Object.setPrototypeOf(function send(...args) {
-          // store input args in closure map
-          const openArgs = _openArgs.get(this) ?? [];
-          for(const arg of openArgs){
-            const sarg = stringify(arg);
-            for(const block of blocks){
-              if(sarg.includes(block))return;
-            }
-          }
-          return _send.apply(this, args);
-        }, _send);
-      })();
-
-      // patching a property is similar to patching a method but only for the property getter
-      // this example block the response if it contains one of our string representations
-      for (const res of ['response', 'responseText', 'responseURL', 'responseXML']) {
+      try {
+        // extra IIFE layer for additional closures
         (() => {
-          const _response = Object.getOwnPropertyDescriptor(xhr.prototype, res)?.get;
-          if (!_response) return;
-          Object.defineProperty(xhr.prototype, res, {
-            configurable: true,
-            enumerable: true,
-            get: Object.setPrototypeOf(function response() {
+          // store the original open method
+          const _open = xhr.prototype.open;
+          if (!_open) return;
+          // set up inheritance between new method to old one to maintain other customizations from others
+          xhr.prototype.open = Object.setPrototypeOf(function open(...args) {
+            // store input args in closure map
+            _openArgs.set(this, args);
+            return _open.apply(this, args);
+          }, _open);
+        })();
+
+        (() => {
+          // store the original send method
+          const _send = xhr.prototype.send;
+          if (!_send) return;
+          // set up inheritance between new method to old one to maintain other customizations from others
+          xhr.prototype.send = Object.setPrototypeOf(function send(...args) {
+            // store input args in closure map
+            const openArgs = _openArgs.get(this) ?? [];
+            for (const arg of openArgs) {
+              const sarg = stringify(arg);
               for (const block of blocks) {
-                // block request if it matches list
-                if (stringify(x).includes(block)) {
-                  console.warn('blocking xhr response', stringify(x));
-                  // return the expected object type but empty
-                  return Object.create(_response.call(this)?.__proto__);
-                }
+                if (sarg.includes(block)) return;
               }
-              return _response.call(this);
-            }, _response)
-          });
-        })()
-      }
-     }catch{}
+            }
+            return _send.apply(this, args);
+          }, _send);
+        })();
+
+        // patching a property is similar to patching a method but only for the property getter
+        // this example block the response if it contains one of our string representations
+        for (const res of ['response', 'responseText', 'responseURL', 'responseXML']) {
+          (() => {
+            const _response = Object.getOwnPropertyDescriptor(xhr.prototype, res)?.get;
+            if (!_response) return;
+            Object.defineProperty(xhr.prototype, res, {
+              configurable: true,
+              enumerable: true,
+              get: Object.setPrototypeOf(function response() {
+                for (const block of blocks) {
+                  // block request if it matches list
+                  if (stringify(x).includes(block)) {
+                    console.warn('blocking xhr response', stringify(x));
+                    // return the expected object type but empty
+                    return Object.create(_response.call(this)?.__proto__);
+                  }
+                }
+                return _response.call(this);
+              }, _response)
+            });
+          })()
+        }
+      } catch {}
     }
   })();
 ```
@@ -185,51 +185,53 @@ In this example we modify a NodeList which has a fixed set of nodes. We can chan
 <div></div><div></div><div></div>
 <wtf></wtf>
 <script>
-const arr = document.querySelectorAll('div');
-arr[3] = document.querySelector('wtf');
-console.log(arr[3]); // > undefined
-const insert = {"3":document.querySelector('wtf')};
-Object.defineProperty(arr,'length',{
-  value: arr.length+1,
-  configurable:true,
-  writable:true
-});
-[insert.__proto__,arr.__proto__] = [arr.__proto__,insert];
-console.log(arr); // > [<div/>,<div/>,<div/>,<wtf/>]
+  const arr = document.querySelectorAll('div');
+  arr[3] = document.querySelector('wtf');
+  console.log(arr[3]); // > undefined
+  const insert = {
+    "3": document.querySelector('wtf')
+  };
+  Object.defineProperty(arr, 'length', {
+    value: arr.length + 1,
+    configurable: true,
+    writable: true
+  });
+  [insert.__proto__, arr.__proto__] = [arr.__proto__, insert];
+  console.log(arr); // > [<div/>,<div/>,<div/>,<wtf/>]
 </script>
 ```
 We can extrapolate this out into a push method.
 ```html
 <script>
-(()=>{
-NodeList.prototype.push = function push(x){
-  // try the proper way first by appending to the parent element
-if(x instanceof Node){
-  if(this[0]?.parentNode?.childNodes === this){
-    this[0].parentNode.appendChild(x);
-    return this.length;
-  }
-  if(this[0]?.parentElement?.childNodes === this){
-    this[0].parentElement.appendChild(x);
-    return this.length;
-  }
-}
-// if the elements don't share a common parent then apply this hack
-const insert = {};
-insert[this.length] = x;
-Object.defineProperty(this,'length',{
-  value: this.length+1,
-  configurable:true,
-  writable:true
-});
-[insert.__proto__,this.__proto__] = [this.__proto__,insert];
-return this.length;
-};
-})();
-  
-const nodes = document.querySelectorAll('div');
-nodes.push(document.querySelector('wtf'));
-console.log(nodes); // > [<div/>,<div/>,<div/>,<wtf/>]
+  (() => {
+    NodeList.prototype.push = function push(x) {
+      // try the proper way first by appending to the parent element
+      if (x instanceof Node) {
+        if (this[0]?.parentNode?.childNodes === this) {
+          this[0].parentNode.appendChild(x);
+          return this.length;
+        }
+        if (this[0]?.parentElement?.childNodes === this) {
+          this[0].parentElement.appendChild(x);
+          return this.length;
+        }
+      }
+      // if the elements don't share a common parent then apply this hack
+      const insert = {};
+      insert[this.length] = x;
+      Object.defineProperty(this, 'length', {
+        value: this.length + 1,
+        configurable: true,
+        writable: true
+      });
+      [insert.__proto__, this.__proto__] = [this.__proto__, insert];
+      return this.length;
+    };
+  })();
+
+  const nodes = document.querySelectorAll('div');
+  nodes.push(document.querySelector('wtf'));
+  console.log(nodes); // > [<div/>,<div/>,<div/>,<wtf/>]
 </script>
 ```
 
@@ -241,46 +243,46 @@ We can modify frozen objects by appending properties on the prototype that are r
   // get our frozen object
   const froze = Object.freeze({});
   const unfreeze = (() => {
-        const hasProp = (obj,prop)=>{
-          try{
-            return !!Object.getOwnPropertyDescriptor(obj,prop);
-          }catch{}
-        };
-        // create a map to store additional object properties
-        const $Map = self.WeakMap ?? Map;
-        const keyMap = new $Map();
-        return (obj, key, val) => {
-          const proto = obj.__proto__;
-          // if the object already has this property then this trick wont work
-          // if the prototype already has this property then this trick would corrupt the prototype
-          if(hasProp(obj,key)||hasProp(proto,key))return;
-          const objMap = keyMap.get(obj) ?? Object.create(null);
-          objMap[key] = val;
-          keyMap.set(obj,objMap);
-          Object.defineProperty(proto, key, {
-            get() {
-              const objMap = keyMap.get(this) ?? Object.create(null);
-              keyMap.set(this,objMap);
-              return objMap[key];
-            },
-            set(x) {
-              const objMap = keyMap.get(this) ?? Object.create(null);
-              keyMap.set(this,objMap);
-              return objMap[key] = x;
-            },
-            enumerable: true,
-            configurable: true
-          });
-        };
-      })(); 
-      unfreeze(froze, 'test', 7);        
-      console.log(froze.test); // > 7
-      froze.test = 8; 
-      console.log(froze.test); // > 8
-      let x = {};
-      x.test = 'gg';
-      console.log(x.test); // > 'gg'
-      console.log(froze.test); // > 8  
+    const hasProp = (obj, prop) => {
+      try {
+        return !!Object.getOwnPropertyDescriptor(obj, prop);
+      } catch {}
+    };
+    // create a map to store additional object properties
+    const $Map = self.WeakMap ?? Map;
+    const keyMap = new $Map();
+    return (obj, key, val) => {
+      const proto = obj.__proto__;
+      // if the object already has this property then this trick wont work
+      // if the prototype already has this property then this trick would corrupt the prototype
+      if (hasProp(obj, key) || hasProp(proto, key)) return;
+      const objMap = keyMap.get(obj) ?? Object.create(null);
+      objMap[key] = val;
+      keyMap.set(obj, objMap);
+      Object.defineProperty(proto, key, {
+        get() {
+          const objMap = keyMap.get(this) ?? Object.create(null);
+          keyMap.set(this, objMap);
+          return objMap[key];
+        },
+        set(x) {
+          const objMap = keyMap.get(this) ?? Object.create(null);
+          keyMap.set(this, objMap);
+          return objMap[key] = x;
+        },
+        enumerable: true,
+        configurable: true
+      });
+    };
+  })();
+  unfreeze(froze, 'test', 7);
+  console.log(froze.test); // > 7
+  froze.test = 8;
+  console.log(froze.test); // > 8
+  let x = {};
+  x.test = 'gg';
+  console.log(x.test); // > 'gg'
+  console.log(froze.test); // > 8  
 </script>
 ```
 
@@ -288,101 +290,102 @@ We can modify frozen objects by appending properties on the prototype that are r
 We can modify non-primitive properties of frozen objects by essentially redirecting everything on property object to a new value. This can also be used to redefine a `const` in place. Keep in mind that this in place modification effects every reference to this propert object. 
 ```html
 <script>
-//shorthand for defining properties on objects
-const objDoProp = function(obj, prop, def, enm, mut) {
-  return Object.defineProperty(obj, prop, {
-    value: def,
-    writable: mut,
-    enumerable: enm,
-    configurable: mut,
-  });
-};
-const objDefProp = (obj, prop, def) => objDoProp(obj, prop, def, false, true);
-const objDefEnum = (obj, prop, def) => objDoProp(obj, prop, def, true, true);
-
-// fallback to writeable if configurable is false
-const objWriteProp = (obj,prop,def)=>{
-  try{
-    const old = Object.getOwnPropertyDescriptor(obj,prop);
-    if(old?.writable && !old?.configurable){
-      obj[prop] = def;
-    }else{
-      objDefProp(obj,prop,def);
-    }
-  }catch{}
-};
-
-const objWriteEnum = (obj,prop,def)=>{
-  try{
-    const old = Object.getOwnPropertyDescriptor(obj,prop);
-    if(old?.writable && !old?.configurable){
-      obj[prop] = def;
-    }else{
-      objDefEnum(obj,prop,def);
-    }
-  }catch{}
-};
-
-const getKeys = x =>{
-  try{
-    return Reflect.ownKeys(x);
-  }catch{
-    return [];
-  }
-};
-
-//assign all properties from src to target
-//bind functions to src when assigning to target
-function assignAll(target, src) {
-  const excepts = ["prototype", "constructor", "__proto__"];
-  const enums = [];
-  let source = src;
-  while (source) {
-    for (const key in source) {
-      try {
-        if (excepts.includes(key)) {
-          continue;
-        }
-        objWriteEnum(target, key, source[key]?.bind?.(src?.valueOf?.() ?? src) ?? source[key]);
-        enums.push(key);
-      } catch {}
-    }
-    for (const key of getKeys(source)) {
-      try {
-        if (enums.includes(key) || excepts.includes(key)) {
-          continue;
-        }
-        objWriteProp(target, key, source[key]?.bind?.(src?.valueOf?.() ?? src) ?? source[key]);
-        
-      } catch {}
-    }
-    // walk up the prototype chain for more properties
-    source = Object.getPrototypeOf(source);
-  }
-  // make sure identifying properties point to src
-  for(const identity of ["valueOf","toString","toLocaleString",Symbol.toPrimitive]){
-    try{
-      objWriteProp(target,identity,()=>src);
-    }catch{}
-  }
-  try{
-    Object.defineProperty(target,Symbol.toStringTag,{
-      configurable:true,
-      enumerable:true,
-      get:()=>src
+  //shorthand for defining properties on objects
+  const objDoProp = function(obj, prop, def, enm, mut) {
+    return Object.defineProperty(obj, prop, {
+      value: def,
+      writable: mut,
+      enumerable: enm,
+      configurable: mut,
     });
-  }catch{}
-  // finally assign the prototype of src to target
-  try{target.__proto__ = src.__proto__;}catch{}
-  return target;
-}
+  };
+  const objDefProp = (obj, prop, def) => objDoProp(obj, prop, def, false, true);
+  const objDefEnum = (obj, prop, def) => objDoProp(obj, prop, def, true, true);
 
-const obj = {};
+  // fallback to writeable if configurable is false
+  const objWriteProp = (obj, prop, def) => {
+    try {
+      const old = Object.getOwnPropertyDescriptor(obj, prop);
+      if (old?.writable && !old?.configurable) {
+        obj[prop] = def;
+      } else {
+        objDefProp(obj, prop, def);
+      }
+    } catch {}
+  };
 
-console.log(assignAll(obj,new Response("cheese"))); // > [object Response]
+  const objWriteEnum = (obj, prop, def) => {
+    try {
+      const old = Object.getOwnPropertyDescriptor(obj, prop);
+      if (old?.writable && !old?.configurable) {
+        obj[prop] = def;
+      } else {
+        objDefEnum(obj, prop, def);
+      }
+    } catch {}
+  };
 
-(async()=>console.log(await obj.text()))(); // > "cheese"
+  const getKeys = x => {
+    try {
+      return Reflect.ownKeys(x);
+    } catch {
+      return [];
+    }
+  };
 
+  //assign all properties from src to target
+  //bind functions to src when assigning to target
+  function assignAll(target, src) {
+    const excepts = ["prototype", "constructor", "__proto__"];
+    const enums = [];
+    let source = src;
+    while (source) {
+      for (const key in source) {
+        try {
+          if (excepts.includes(key)) {
+            continue;
+          }
+          objWriteEnum(target, key, source[key]?.bind?.(src?.valueOf?.() ?? src) ?? source[key]);
+          enums.push(key);
+        } catch {}
+      }
+      for (const key of getKeys(source)) {
+        try {
+          if (enums.includes(key) || excepts.includes(key)) {
+            continue;
+          }
+          objWriteProp(target, key, source[key]?.bind?.(src?.valueOf?.() ?? src) ?? source[key]);
+
+        } catch {}
+      }
+      // walk up the prototype chain for more properties
+      source = Object.getPrototypeOf(source);
+    }
+    // make sure identifying properties point to src
+    for (const identity of ["valueOf", "toString", "toLocaleString", Symbol.toPrimitive]) {
+      try {
+        objWriteProp(target, identity, () => src);
+      } catch {}
+    }
+    try {
+      Object.defineProperty(target, Symbol.toStringTag, {
+        configurable: true,
+        enumerable: true,
+        get: () => src
+      });
+    } catch {}
+    // finally assign the prototype of src to target
+    try {
+      target.__proto__ = src.__proto__;
+    } catch {}
+    return target;
+  }
+
+  const obj = {};
+
+  console.log(assignAll(obj, new Response("cheese"))); // > [object Response]
+
+  (async () => console.log(await obj.text()))(); // > "cheese"
 </script>
 ```
 
@@ -392,66 +395,66 @@ The best way to modify frozen objects is to never let them freeze in the first p
 
 ```js
 
-(()=>{
-  const _freeze = Object.freeze;
-  Object.freeze = Object.setPrototypeOf(function freeze(obj){
-    return obj;
-  },_freeze);
-})();
+  (() => {
+    const _freeze = Object.freeze;
+    Object.freeze = Object.setPrototypeOf(function freeze(obj) {
+      return obj;
+    }, _freeze);
+  })();
 
-(()=>{
-  const _seal = Object.seal;
-  Object.seal = Object.setPrototypeOf(function seal(obj){
-    return obj;
-  },_seal);
-})();
+  (() => {
+    const _seal = Object.seal;
+    Object.seal = Object.setPrototypeOf(function seal(obj) {
+      return obj;
+    }, _seal);
+  })();
 
-(()=>{
-  const _preventExtensions = Object.preventExtensions;
-  Object.preventExtensions = Object.setPrototypeOf(function preventExtensions(obj){
-    return obj;
-  },_preventExtensions);
-})();
+  (() => {
+    const _preventExtensions = Object.preventExtensions;
+    Object.preventExtensions = Object.setPrototypeOf(function preventExtensions(obj) {
+      return obj;
+    }, _preventExtensions);
+  })();
 
-(()=>{
-  const _preventExtensions = Reflect.preventExtensions;
-    Reflect.preventExtensions = Object.setPrototypeOf(function preventExtensions(obj){
-    return true;
-  },_preventExtensions);
-})();
+  (() => {
+    const _preventExtensions = Reflect.preventExtensions;
+    Reflect.preventExtensions = Object.setPrototypeOf(function preventExtensions(obj) {
+      return true;
+    }, _preventExtensions);
+  })();
 
-(()=>{
-  const _defineProperty = Object.defineProperty;
-  Object.defineProperty = Object.setPrototypeOf(function defineProperty(obj,prop,desc){
-    return _defineProperty(obj,prop,{
-      ...desc,
-      configurable:true
-    })
-  },_defineProperty);
-})();
+  (() => {
+    const _defineProperty = Object.defineProperty;
+    Object.defineProperty = Object.setPrototypeOf(function defineProperty(obj, prop, desc) {
+      return _defineProperty(obj, prop, {
+        ...desc,
+        configurable: true
+      })
+    }, _defineProperty);
+  })();
 
-(()=>{
-  const _defineProperties = Object.defineProperties;
-  Object.defineProperties = Object.setPrototypeOf(function defineProperties(obj,desc){
-    for(const key in desc){
-      desc[key].configurable = true;
-    }
-    for(const key of Reflect.ownKeys(desc)){
-      desc[key].configurable = true;
-    }
-    return _defineProperties(obj,desc)
-  },_defineProperties);
-})();
+  (() => {
+    const _defineProperties = Object.defineProperties;
+    Object.defineProperties = Object.setPrototypeOf(function defineProperties(obj, desc) {
+      for (const key in desc) {
+        desc[key].configurable = true;
+      }
+      for (const key of Reflect.ownKeys(desc)) {
+        desc[key].configurable = true;
+      }
+      return _defineProperties(obj, desc)
+    }, _defineProperties);
+  })();
 
-(()=>{
-  const _defineProperty = Reflect.defineProperty;
-  Reflect.defineProperty = Object.setPrototypeOf(function defineProperty(obj,prop,desc){
-    return _defineProperty(obj,prop,{
-      ...desc,
-      configurable:true
-    })
-  },_defineProperty);
-})();
+  (() => {
+    const _defineProperty = Reflect.defineProperty;
+    Reflect.defineProperty = Object.setPrototypeOf(function defineProperty(obj, prop, desc) {
+      return _defineProperty(obj, prop, {
+        ...desc,
+        configurable: true
+      })
+    }, _defineProperty);
+  })();
 
 ```
 
@@ -461,8 +464,8 @@ On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/
 
 ```js
   // synchronously turn a blob into text
-  function blobText(blob){
-    if(typeof FileReaderSync){
+  function blobText(blob) {
+    if (typeof FileReaderSync) {
       return new FileReaderSync().readAsText(blob);
     }
     // create blob url
@@ -470,7 +473,7 @@ On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/
     // create an ajax request targeted ar rge blob url
     // set async to false
     const xhr = new XMLHttpRequest();
-    xhr.open('GET',url,false);
+    xhr.open('GET', url, false);
     // execute the "network" request
     xhr.send();
     //return the response as text
@@ -488,30 +491,30 @@ When you have a promise, you must call `await` in an async context in order to g
 
 ```html
 <script type="module">
-  let value = new Promise(resolve=>resolve("hello"));
-  (async()=>value = await value)();
-  console.log(value?.constructor?.name,value);
-  if(value instanceof Promise)await "anything"
-  console.log(value?.constructor?.name,value);
+  let value = new Promise(resolve => resolve("hello"));
+  (async () => value = await value)();
+  console.log(value?.constructor?.name, value);
+  if (value instanceof Promise) await "anything"
+  console.log(value?.constructor?.name, value);
 </script>
 ```
 
 We can package this up in a simple wrapper class
 ```html
 <script type="module">
-  class PromiseWrapper{
-    constructor(promise){
+  class PromiseWrapper {
+    constructor(promise) {
       this.promise = promise;
-      (async()=>{
-       try{
-         this.value = await promise;
-       }catch(e){
-         this.error = e;
-       }
+      (async () => {
+        try {
+          this.value = await promise;
+        } catch (e) {
+          this.error = e;
+        }
       })();
     }
   }
-  const value = new Promise(resolve=>resolve("hello"));
+  const value = new Promise(resolve => resolve("hello"));
   const wrap = new PromiseWrapper(value);
   console.log(wrap);
   await value;
@@ -527,7 +530,7 @@ This is not really a JavaScript hack but a Google Colab trick. While primarily u
 %%bash
 node -e "$(cat <<-END
 
-    console.log('hello world');
+  console.log('hello world');
 
 END
 )"
@@ -548,9 +551,9 @@ node -e "$(cat <<-END
   //import util.inspect
   const { inspect } = require("util");
   //create a simple promise
-  const promise = (async()=>"hello world")();
+  const promise = (async () => "hello world")();
   //inspect checks internals without needing to await anything
-  const value = inspect(promise).slice(11,-3);
+  const value = inspect(promise).slice(11, -3);
   console.log(value); //> hello world
 
 END
@@ -565,36 +568,36 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
 
 ```html
 <script type="module">
-(()=>{
-  // Non-leaking IIFE
-  // Apply to both request and response
-  for(const r of [Request.prototype,Response.prototype]){
-    // Apply to all functions that can consume the body
-    for(const fn of ['arrayBuffer','blob','bytes','formData','json','text']){
-      // skip if doesn't exist
-      if(typeof r[fn] !== 'function') continue;
-      // store the native function
-      const _fn = r[fn];
-      // Shadow the native function with a wrapper that clones first
-      r[fn] = Object.setPrototypeOf(function(){
-                return _fn.call(this.clone());
-              },_fn);
+  (() => {
+    // Non-leaking IIFE
+    // Apply to both request and response
+    for (const r of [Request.prototype, Response.prototype]) {
+      // Apply to all functions that can consume the body
+      for (const fn of ['arrayBuffer', 'blob', 'bytes', 'formData', 'json', 'text']) {
+        // skip if doesn't exist
+        if (typeof r[fn] !== 'function') continue;
+        // store the native function
+        const _fn = r[fn];
+        // Shadow the native function with a wrapper that clones first
+        r[fn] = Object.setPrototypeOf(function() {
+          return _fn.call(this.clone());
+        }, _fn);
+      }
+      // Apply to the getter of the body itself
+      const _body = Object.getOwnPropertyDescriptor(r, 'body').get;
+      if (_body) {
+        Object.defineProperty(r, 'body', {
+          value() {
+            return _body.call(this.clone());
+          }
+        });
+      }
     }
-    // Apply to the getter of the body itself
-    const _body = Object.getOwnPropertyDescriptor(r,'body').get;
-    if(_body){
-      Object.defineProperty(r,'body',{
-        value(){
-          return _body.call(this.clone());
-        }
-      });
-    }
-  }
-})();
+  })();
 
-const res = new Response('asdf');
-console.log(await res.text()); //> asdf
-console.log(await res.text()); //> asdf
+  const res = new Response('asdf');
+  console.log(await res.text()); //> asdf
+  console.log(await res.text()); //> asdf
 </script>
 ```
 
