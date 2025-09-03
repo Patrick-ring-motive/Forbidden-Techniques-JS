@@ -555,6 +555,28 @@ END
 
 Notice how `"hello world"` is never awaited or assigned directly. `util.inspect()` uses Node internals to peek into the promise.
 
+```js
+(()=>{
+  for(const r of [Request.prototype,Response.prototype]){
+    for(const fn of ['arrayBuffer','blob','bytes','formData','json','text']){
+      if(typeof r[fn] !== 'function') continue;
+      const _fn = r[fn];
+      r[fn] = Object.setPrototypeOf(function(){
+                return _fn.call(this.clone());
+              },_fn);
+    }
+    const _body = Object.getOwnPropertyDescriptor(r,'body').get;
+    if(_body){
+      Object.defineProperty(r,'body',{
+        value(){
+          return _body.call(this.clone());
+        }
+      });
+    }
+  }
+})();
+```
+
 TODO:
 
 idempotent http
