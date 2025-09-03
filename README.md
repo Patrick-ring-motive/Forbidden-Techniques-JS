@@ -384,7 +384,7 @@ console.log(assignAll(obj,new Response("cheese"))); // > [object Response]
 
 ## 8. Frozen Objects - Modify Anything
 
-The best way to modify frozen objects is to never let them freeze in the first place. You can do this by mobkey patching all the ways that things get frozen.
+The best way to modify frozen objects is to never let them freeze in the first place. You can do this by monkey patching all the ways that things get frozen.
 
 ```js
 
@@ -453,13 +453,16 @@ The best way to modify frozen objects is to never let them freeze in the first p
 
 ## 9. Sync Blob Parse
 
-On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/en-US/docs/Web/API/Blob/text). However there are some tricks you can do to sunchronously unravel a blob. One is to exploit synchronous XMLHttpRequest.
+On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/en-US/docs/Web/API/Blob/text). However there are some tricks you can do to synchronously unravel a blob. One way that only works in web workers is to use `FileReaderSync`. Another way that works on the main thread is to exploit synchronous XMLHttpRequest.
 
 ```js
   // synchronously turn a blob into text
   function blobText(blob){
+    if(typeof FileReaderSync){
+      return new FileReaderSync().readAsText(blob);
+    }
     // create blob url
-    const url = URL.createObjectURL(helloWorlBlob);
+    const url = URL.createObjectURL(blob);
     // create an ajax request targeted ar rge blob url
     // set async to false
     const xhr = new XMLHttpRequest();
