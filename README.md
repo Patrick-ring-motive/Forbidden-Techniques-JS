@@ -12,6 +12,7 @@ Forbidden Techniques is a collection of my techniques developed from my explorat
 - [8. Frozen Objects - Modify Anything](#8-frozen-objects---modify-anything)
 - [9. Sync Blob Parse](#9-sync-blob-parse)
 - [10. Short Circuit Promises](#10-short-circuit-promises)
+- [11. Node in Google Colab](#11-Node-in-Google-Colab)
 
 ## 1. `await` keyword overloading
 
