@@ -14,6 +14,8 @@ Forbidden Techniques is a collection of my techniques developed from my explorat
 - [10. Short Circuit Promises](#10-short-circuit-promises)
 - [11. Node in Google Colab](#11-Node-in-Google-Colab)
 - [12. Short Circuit Promises with `util.inspect()`](#12-short-circuit-promises-with-utilinspect)
+- [13. Idempotent `fetch`](#13-Idempotent-fetch)
+
 ## 1. `await` keyword overloading
 
 `await` is a keyword in js that works in async code blocks to wait for a promise to resolve. While it is a keyword, it is not reserved. This means it can be overloaded at the global level. When you do this, you can get some interesting behavior. Consider this [example](https://codepen.io/Patrick-Ring/pen/azvVNKq).
