@@ -637,3 +637,67 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
 ```
 
 This can be particularly useful when doing your own clientside caching and preventing async race conditions.
+
+## 14. Prototype Pollution --- Array Methods on Strings
+
+Strings are iterable in JavaScript, but they don't normally inherit all
+of `Array.prototype`. With some prototype pollution, we can inject every
+array method into strings, making them behave like hybrid string/array
+objects. This can lead to some very cursed behavior.
+
+``` html
+<script>
+(() => {
+  const isString = x => typeof x === 'string' || x instanceof String || x?.constructor?.name === 'String';
+  const isArray = x => Array.isArray(x) || x instanceof Array || x?.constructor?.name === 'Array';
+  for (const prop of Reflect.ownKeys(Array.prototype)) {
+    if (typeof Array.prototype[prop] !== 'function') continue;
+    String.prototype[prop] ??= function (...args) {
+      const res = [...this][prop](...args);
+      if (isArray(res) && [...res].every(isString)) {
+        return [...res].join('');
+      }
+      return res;
+    };
+  }
+})();
+</script>
+```
+
+Now every string in your runtime inherits array methods:
+
+``` js
+console.log("cheese".map(c => c.toUpperCase())); 
+// CHEESE
+
+console.log("abc".filter(c => c > "a")); 
+// bc
+
+console.log("cool".join("-")); 
+// c-o-o-l
+
+console.log("dank".reverse()); 
+// knad
+```
+
+### What's happening
+
+-   We loop through every property of `Array.prototype`.
+-   If it's a function (like `.map`, `.filter`, `.reverse`), we copy it
+    onto `String.prototype`.
+-   When called on a string, we spread it into characters (`[...this]`),
+    run the array method, and join back into a string if possible.
+
+### Why this is cursed
+
+-   **Identity confusion:** `"foo".map` suddenly exists, violating
+    assumptions.
+-   **Hidden allocations:** Every method call spreads the string into an
+    array, creating extra memory churn.
+-   **Polyfill collisions:** Any code that checks for missing string
+    methods may break.
+-   **Security pitfalls:** Enumerating `String.prototype` now reveals a
+    bunch of extra methods, which may surprise libraries.
+
+This technique is extremely powerful but will break *everything* that
+assumes strings don't behave like arrays.
