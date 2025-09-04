@@ -601,7 +601,7 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
     }
   })();
 
-  // clone inputs to the cobstructors so they don't consume them
+  // clone inputs to the constructors so they don't get consumed
   (()=>{
     const _Request = Request;
     const $Request = class Request extends _Request{
