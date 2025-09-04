@@ -462,6 +462,7 @@ The best way to modify frozen objects is to never let them freeze in the first p
   })();
 
 ```
+After applying this patch, every attempt to freeze an object will leave it as mutable as before. This will break anything that depends on immutability.
 
 ## 9. Sync Blob Parse
 
