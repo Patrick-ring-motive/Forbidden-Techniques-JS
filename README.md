@@ -647,18 +647,26 @@ objects. This can lead to some very cursed behavior.
 
 ``` html
 <script>
-(() => {
-  const isString = x => typeof x === 'string' || x instanceof String || x?.constructor?.name === 'String';
-  const isArray = x => Array.isArray(x) || x instanceof Array || x?.constructor?.name === 'Array';
-  for (const prop of Reflect.ownKeys(Array.prototype)) {
-    if (typeof Array.prototype[prop] !== 'function') continue;
-    String.prototype[prop] ??= function (...args) {
-      const res = [...this][prop](...args);
-      if (isArray(res) && [...res].every(isString)) {
-        return [...res].join('');
-      }
-      return res;
-    };
+(()=>{
+  const isType = (x,type) => 
+    typeof x === String(type).toLowerCase() 
+    || x instanceof globalThis[type] 
+    || x?.constructor?.name === type
+    || globalThis[type]?.[`is${type}`]?.(x);
+
+  const to = {
+    String : (x)=>[...x].every(s=>isType(s,'String'))?[...x].join(''):x,
+    Set    : (x)=>new Set(x),
+  };
+
+  for(const type of ['String','Set','NodeList','HTMLCollection']){
+    for(const prop of Reflect.ownKeys(Array.prototype)){
+      if(typeof Array.prototype[prop] !== 'function') continue;
+      (globalThis[type]?.prototype ?? {})[prop] ??= function(...args){
+        const res = [...this][prop](...args);
+        return isType(res,'Array') ? (to[type]?.(res) ?? res) : res;
+      };
+    }
   }
 })();
 </script>
