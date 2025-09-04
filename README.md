@@ -621,6 +621,14 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
     globalThis.Response = $Response;
   })();
 
+  // patch fetch to not consume requests
+  (()=>{
+    const _fetch = fetch;
+    globalThis.fetch = Object.setPrototypeOf(function fetch(...args){
+      return _fetch.apply(this,args.map(x?.clone?.() ?? x)):
+    },_fetch);
+  })();
+
   const res = new Response('asdf');
   console.log(await res.text()); //> asdf
   console.log(await res.text()); //> asdf
