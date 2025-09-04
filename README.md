@@ -600,6 +600,27 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
     }
   })();
 
+  // clone inputs to the cobstructors so they don't consume them
+  (()=>{
+    const _Request = Request;
+    const $Request = class Request extends _Request{
+      constructor(...args){
+         super(...args.map(x=>x?.clone?.() ?? x));
+      }
+    };
+    globalThis.Request = $Request;
+  })();
+
+  (()=>{
+    const _Response = Response;
+    const $Response = class Response extends _Response{
+      constructor(...args){
+         super(...args.map(x=>x?.clone?.() ?? x));
+      }
+    };
+    globalThis.Response = $Response;
+  })();
+
   const res = new Response('asdf');
   console.log(await res.text()); //> asdf
   console.log(await res.text()); //> asdf
