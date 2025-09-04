@@ -98,7 +98,7 @@ Monkey patching is modifying in-built JS functions with custom behavior. you hav
 Second to fetch is the older api for network calls XMLHttpRequest. Its a bit more oddly shaped. This patch blocks requests containing certain strings in the url.
 
 
-```js
+```html
 <script>
   // Wrap in IIFE to create non polluting closures
   (() => {
@@ -177,6 +177,7 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
       } catch {}
     }
   })();
+</script>
 ```
 
 ## 5. Modifying read-only NodeList
@@ -568,7 +569,7 @@ Notice how `"hello world"` is never awaited or assigned directly. `util.inspect(
 
 ## 13. Idempotent `fetch`
 
-You'll see `Request` and `Response` objects have consumable contents. So calling `response.text()` will give you the content as text the first time but will throw an error if called again. This optimization exists to prevent browser memory from filling up. While this makes sense, it is not how most objects in JS work. If you use `response.clone().text()` instead, you can call it multiple times. Using monkey the monkey patch below, you can bake this behavior in.
+You'll see `Request` and `Response` objects have consumable contents. So calling `response.text()` will give you the content as text the first time but will throw an error if called again. This optimization exists to prevent browser memory from filling up. While this makes sense geberally, it is not how most objects in JS work and can be hard to wrap ypur head around. If you use `response.clone().text()` instead, you can call it multiple times and on most files this will not cause any issues. Files would have to be very large to have any sort of negative impact. Using the monkey patch below, you can bake this cloning behavior in by default.
 
 ```html
 <script type="module">
