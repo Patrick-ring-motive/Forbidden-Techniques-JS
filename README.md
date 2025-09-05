@@ -593,9 +593,9 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
       const _body = Object.getOwnPropertyDescriptor(r, 'body').get;
       if (_body) {
         Object.defineProperty(r, 'body', {
-          value() {
-            return _body.call(this.clone());
-          }
+          get:Object.setPrototypeOf(function body(){
+          return _body.call(this.clone());
+        },ReadableStream),
         });
       }
     }
@@ -638,7 +638,7 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
 
 This can be particularly useful when doing your own clientside caching and preventing async race conditions.
 
-## 14. Prototype Pollution --- Array Methods on Strings
+## 14. Prototype Pollution
 
 Strings are iterable in JavaScript, but they don't normally inherit all
 of `Array.prototype`. With some prototype pollution, we can inject every
