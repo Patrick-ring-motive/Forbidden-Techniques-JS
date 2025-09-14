@@ -638,14 +638,11 @@ You'll see `Request` and `Response` objects have consumable contents. So calling
 
 This can be particularly useful when doing your own clientside caching and preventing async race conditions.
 
-## 14. Prototype Pollution
+### 14. Multi-Type Prototype Pollution with Intelligent Conversion
 
-Strings are iterable in JavaScript, but they don't normally inherit all
-of `Array.prototype`. With some prototype pollution, we can inject every
-array method into strings, making them behave like hybrid string/array
-objects. This can lead to some very cursed behavior.
+This code performs sophisticated prototype pollution by injecting all array methods into multiple built-in types (String, Set, NodeList, HTMLCollection), complete with intelligent type conversion that maintains each type’s expected behavior.
 
-``` html
+```html
 <script>
 (()=>{
   const isType = (x,type) => 
@@ -672,9 +669,10 @@ objects. This can lead to some very cursed behavior.
 </script>
 ```
 
-Now every string in your runtime inherits array methods:
+Now strings, sets, and DOM collections all inherit array methods with smart conversion:
 
-``` js
+```js
+// Strings become array-like but return strings
 console.log("cheese".map(c => c.toUpperCase())); 
 // CHEESE
 
@@ -686,26 +684,33 @@ console.log("cool".join("-"));
 
 console.log("dank".reverse()); 
 // knad
+
+// Sets get array methods too
+const mySet = new Set([1, 2, 3]);
+console.log(mySet.map(x => x * 2)); 
+// Set(3) {2, 4, 6}
+
+// DOM collections become array-like
+document.querySelectorAll('div').filter(el => el.className.includes('active'));
 ```
 
-### What's happening
+## What’s happening
 
--   We loop through every property of `Array.prototype`.
--   If it's a function (like `.map`, `.filter`, `.reverse`), we copy it
-    onto `String.prototype`.
--   When called on a string, we spread it into characters (`[...this]`),
-    run the array method, and join back into a string if possible.
+1. **Multi-target pollution:** The code targets 4 different prototype chains (String, Set, NodeList, HTMLCollection), not just strings
+1. **Robust type detection:** `isType()` uses multiple detection strategies (typeof, instanceof, constructor.name, and static methods)
+1. **Intelligent conversion system:** The `to` object defines how to convert array results back to the original type
+1. **Safe property injection:** Uses `??=` to avoid overwriting existing methods
+1. **Universal array method copying:** Every function property from `Array.prototype` gets copied to all target prototypes
+1. **Smart return handling:** Array results get converted back to the appropriate type, while non-array results pass through unchanged
 
-### Why this is cursed
+### Why this is extremely cursed
 
--   **Identity confusion:** `"foo".map` suddenly exists, violating
-    assumptions.
--   **Hidden allocations:** Every method call spreads the string into an
-    array, creating extra memory churn.
--   **Polyfill collisions:** Any code that checks for missing string
-    methods may break.
--   **Security pitfalls:** Enumerating `String.prototype` now reveals a
-    bunch of extra methods, which may surprise libraries.
+- **Massive API surface expansion:** Every string, set, and DOM collection suddenly has 30+ new methods
+- **Type system violations:** Objects now have methods they were never designed to support
+- **Performance implications:** Every method call involves spreading, array operations, and type conversion
+- **Library compatibility destruction:** Any code assuming these types have limited methods will break
+- **Memory overhead:** Creates temporary arrays for every operation, even on large collections
+- **Debugging nightmares:** Stack traces now go through multiple conversion layers
+- **Security implications:** Dramatically expands the attack surface by exposing array methods on unexpected types
 
-This technique is extremely powerful but will break *everything* that
-assumes strings don't behave like arrays.
+This technique turns JavaScript’s type system inside-out, making every iterable behave like a hybrid array while maintaining type appearances. It’s prototype pollution taken to its logical extreme.
