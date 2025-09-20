@@ -161,15 +161,16 @@ Second to fetch is the older api for network calls XMLHttpRequest. Its a bit mor
               configurable: true,
               enumerable: true,
               get: Object.setPrototypeOf(function response() {
+                const result = _response.call(this);
                 for (const block of blocks) {
                   // block request if it matches list
-                  if (stringify(x).includes(block)) {
-                    console.warn('blocking xhr response', stringify(x));
+                  if (stringify(result).includes(block)) {
+                    console.warn('blocking xhr response', stringify(result));
                     // return the expected object type but empty
-                    return Object.create(_response.call(this)?.__proto__);
+                    return Object.create(result?.__proto__);
                   }
                 }
-                return _response.call(this);
+                return result;
               }, _response)
             });
           })()
