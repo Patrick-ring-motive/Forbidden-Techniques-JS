@@ -84,9 +84,9 @@ Monkey patching is modifying in-built JS functions with custom behavior. you hav
       // be sure to await or errors won't get caught
       return await _fetch.apply(this, args);
     } catch (e) {
-      return new Response(e.stack, {
+      return new Response(e?.stack, {
         status: 469,
-        statusText: e.message
+        statusText: e?.message
       });
     }
   }, _fetch);
