@@ -472,7 +472,7 @@ On a `Blob`, calling `text()` [returns a promise](https://developer.mozilla.org/
 ```js
   // synchronously turn a blob into text
   function blobText(blob) {
-    if (typeof FileReaderSync) {
+    if (typeof FileReaderSync !== 'undefined') {
       return new FileReaderSync().readAsText(blob);
     }
     // create blob url
